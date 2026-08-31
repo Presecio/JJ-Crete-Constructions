@@ -555,6 +555,18 @@
   .field textarea{resize:vertical;min-height:90px;}
   .quote-form .btn{width:100%;margin-top:6px;}
   .form-note{margin-top:14px;font-size:12.5px;color:rgba(255,255,255,0.5);line-height:1.5;}
+  .form-status{text-align:center; padding:24px 10px 8px;}
+  .form-status-icon{
+    width:56px;height:56px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 20px;
+    background:var(--ink); border:1.5px solid var(--white); color:var(--white);
+  }
+  .form-status-icon svg{width:26px;height:26px;}
+  .form-status h4{font-family:'Inter',sans-serif;font-weight:800;font-size:19px;color:var(--white);margin-bottom:10px;}
+  .form-status p{font-size:14.5px;line-height:1.6;color:rgba(255,255,255,0.68);}
+  .form-status-error .form-status-icon{border-color:rgba(255,255,255,0.4);}
+  .quote-form .btn:disabled{opacity:0.6;cursor:not-allowed;}
   @media (max-width:900px){
     .quote-grid{grid-template-columns:1fr;}
     .form-row{grid-template-columns:1fr;}
@@ -879,39 +891,64 @@
 
       <form class="quote-form" id="quoteForm">
         <h3>Request a free quote</h3>
-        <p>Fill this in and it'll open your email ready to send straight to us.</p>
-        <div class="form-row">
-          <div class="field">
-            <label for="q-name">Name</label>
-            <input id="q-name" name="name" type="text" required placeholder="Your name">
+        <p>Fill this in and it'll come straight through to us — no email app required.</p>
+
+        <input type="hidden" name="access_key" value="c60a9830-656e-4a57-983e-a2551c8eff4e">
+        <input type="hidden" name="subject" id="w3f-subject" value="New Quote Request - JJCRETECREATIONS">
+        <input type="hidden" name="from_name" value="JJCRETECREATIONS Website">
+        <input type="checkbox" name="botcheck" class="w3f-honeypot" style="display:none" tabindex="-1" autocomplete="off">
+
+        <div id="quoteFormFields">
+          <div class="form-row">
+            <div class="field">
+              <label for="q-name">Name</label>
+              <input id="q-name" name="name" type="text" required placeholder="Your name">
+            </div>
+            <div class="field">
+              <label for="q-phone">Phone</label>
+              <input id="q-phone" name="phone" type="tel" required placeholder="04xx xxx xxx">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="q-suburb">Suburb</label>
+              <input id="q-suburb" name="suburb" type="text" placeholder="e.g. Robina">
+            </div>
+            <div class="field">
+              <label for="q-service">Service needed</label>
+              <select id="q-service" name="service">
+                <option>Driveway</option>
+                <option>Pool surround</option>
+                <option>Shed / garage slab</option>
+                <option>Patio / extension</option>
+                <option>Not sure yet</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label for="q-phone">Phone</label>
-            <input id="q-phone" name="phone" type="tel" required placeholder="04xx xxx xxx">
+            <label for="q-message">Tell us about the job</label>
+            <textarea id="q-message" name="message" placeholder="Rough size, timeframe, anything we should know..."></textarea>
           </div>
+          <button type="submit" class="btn btn-primary" id="quoteSubmitBtn">Send Quote Request</button>
+          <p class="form-note" id="formNote">We usually reply with pricing within a day. Prefer to talk? Call or email using the details on the left.</p>
         </div>
-        <div class="form-row">
-          <div class="field">
-            <label for="q-suburb">Suburb</label>
-            <input id="q-suburb" name="suburb" type="text" placeholder="e.g. Robina">
+
+        <div id="quoteFormSuccess" class="form-status" style="display:none;">
+          <div class="form-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
           </div>
-          <div class="field">
-            <label for="q-service">Service needed</label>
-            <select id="q-service" name="service">
-              <option>Driveway</option>
-              <option>Pool surround</option>
-              <option>Shed / garage slab</option>
-              <option>Patio / extension</option>
-              <option>Not sure yet</option>
-            </select>
+          <h4>Request sent</h4>
+          <p>Thanks — that's landed in our inbox. We'll be in touch with pricing shortly.</p>
+        </div>
+
+        <div id="quoteFormError" class="form-status form-status-error" style="display:none;">
+          <div class="form-status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </div>
+          <h4>Something went wrong</h4>
+          <p>Your request didn't send. Please try again, or call/email us directly using the details on the left.</p>
+          <button type="button" class="btn btn-outline" id="quoteTryAgain" style="margin-top:16px;">Try Again</button>
         </div>
-        <div class="field">
-          <label for="q-message">Tell us about the job</label>
-          <textarea id="q-message" name="message" placeholder="Rough size, timeframe, anything we should know..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Send Quote Request</button>
-        <p class="form-note">This opens your email app with the details filled in — hit send and we'll reply with pricing, usually within a day.</p>
       </form>
     </div>
   </div>
@@ -1010,24 +1047,59 @@
     if(e.key === 'ArrowRight') { currentIdx = (currentIdx + 1) % galleryImgs.length; updateLightbox(); }
   });
 
-  // Quote form -> mailto
-  document.getElementById('quoteForm').addEventListener('submit', function(e){
+  // Quote form -> Web3Forms
+  var quoteForm = document.getElementById('quoteForm');
+  var quoteFields = document.getElementById('quoteFormFields');
+  var quoteSuccess = document.getElementById('quoteFormSuccess');
+  var quoteError = document.getElementById('quoteFormError');
+  var submitBtn = document.getElementById('quoteSubmitBtn');
+  var subjectField = document.getElementById('w3f-subject');
+
+  function resetQuoteForm(){
+    quoteError.style.display = 'none';
+    quoteFields.style.display = 'block';
+  }
+
+  quoteForm.addEventListener('submit', function(e){
     e.preventDefault();
-    var name = document.getElementById('q-name').value;
-    var phone = document.getElementById('q-phone').value;
-    var suburb = document.getElementById('q-suburb').value;
+
     var service = document.getElementById('q-service').value;
-    var message = document.getElementById('q-message').value;
-    var subject = encodeURIComponent('Free Quote Request - ' + service + (suburb ? ' - ' + suburb : ''));
-    var body = encodeURIComponent(
-      'Name: ' + name + '\n' +
-      'Phone: ' + phone + '\n' +
-      'Suburb: ' + suburb + '\n' +
-      'Service needed: ' + service + '\n\n' +
-      'Details:\n' + message
-    );
-    window.location.href = 'mailto:jjcretecreations@gmail.com?subject=' + subject + '&body=' + body;
+    var suburb = document.getElementById('q-suburb').value;
+    subjectField.value = 'New Quote Request - ' + service + (suburb ? ' - ' + suburb : '');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    quoteError.style.display = 'none';
+
+    var formData = new FormData(quoteForm);
+    var payload = Object.fromEntries(formData);
+    payload.access_key = formData.get('access_key');
+
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      if(data.success){
+        quoteFields.style.display = 'none';
+        quoteSuccess.style.display = 'block';
+      } else {
+        throw new Error(data.message || 'Submission failed');
+      }
+    })
+    .catch(function(){
+      quoteFields.style.display = 'none';
+      quoteError.style.display = 'block';
+    })
+    .finally(function(){
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send Quote Request';
+    });
   });
+
+  document.getElementById('quoteTryAgain').addEventListener('click', resetQuoteForm);
 </script>
 
 </body>
