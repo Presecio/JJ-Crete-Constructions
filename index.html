@@ -482,25 +482,64 @@
   }
   .reviews-badge .stars{color:var(--white); font-size:18px; letter-spacing:2px;}
   .reviews-badge .lbl{font-family:'JetBrains Mono',monospace; font-size:12px; color:rgba(255,255,255,0.6);}
-  .reviews-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
+  .reviews-carousel{
+    position:relative;
+    overflow:hidden;
+  }
+  .reviews-track{
+    display:flex;
+    transition:transform .65s cubic-bezier(.65,0,.35,1);
+  }
+  .review-slide{
+    flex:0 0 100%;
+    width:100%;
+    display:flex;
+    justify-content:center;
+    box-sizing:border-box;
+    padding:0 4px;
   }
   .review-card{
     background:var(--ink);
     border:1px solid var(--line-dark);
-    padding:30px 26px;
+    padding:36px 38px;
     display:flex;
     flex-direction:column;
-    gap:18px;
+    gap:20px;
+    width:100%;
+    max-width:680px;
+    box-sizing:border-box;
   }
-  .review-card .stars{color:var(--white);font-size:15px;letter-spacing:2px;}
-  .review-card p{font-size:15px;line-height:1.65;color:rgba(255,255,255,0.82);}
+  .review-card .stars{color:var(--white);font-size:16px;letter-spacing:2px;}
+  .review-card p{font-size:16px;line-height:1.75;color:rgba(255,255,255,0.85);}
   .review-card .who{display:flex;flex-direction:column;margin-top:auto;padding-top:14px;border-top:1px solid var(--line-dark);}
   .review-card .who strong{font-size:14px;color:var(--white);}
   .review-card .who span{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:rgba(255,255,255,0.5);margin-top:2px;}
-  @media (max-width:960px){.reviews-grid{grid-template-columns:1fr;}}
+
+  .reviews-arrow{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:42px;height:42px;
+    background:var(--ink-soft); border:1px solid var(--line-dark); color:var(--white);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; z-index:2;
+  }
+  .reviews-arrow:hover{background:var(--ink);}
+  .reviews-arrow svg{width:19px;height:19px;}
+  .reviews-arrow.prev{left:0;}
+  .reviews-arrow.next{right:0;}
+
+  .reviews-dots{display:flex; justify-content:center; gap:10px; margin-top:30px;}
+  .reviews-dots .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:rgba(255,255,255,0.25);
+    border:none; padding:0; cursor:pointer;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .reviews-dots .dot.active{background:var(--white); transform:scale(1.3);}
+
+  @media (max-width:700px){
+    .review-card{padding:28px 24px;}
+    .reviews-arrow{display:none;}
+  }
 
   /* ---------- Quote / CTA ---------- */
   .quote{
@@ -842,25 +881,32 @@
       </div>
       <div class="reviews-badge">
         <span class="stars">★★★★★</span>
-        <span class="lbl">Ask us for references<br>from recent Gold Coast jobs</span>
+        <span class="lbl">5.0 average<br>from recent Gold Coast jobs</span>
       </div>
     </div>
-    <div class="reviews-grid">
-      <div class="review-card">
-        <span class="stars">★★★★★</span>
-        <p>"Turned up when they said they would, kept the site tidy, and the pool surround finish is dead flat. Exactly what we wanted."</p>
-        <div class="who"><strong>Sample client review</strong><span>Add a real quote here once your first jobs are done</span></div>
+    <div class="reviews-carousel">
+      <div class="reviews-track" id="reviewsTrack">
+        <div class="review-slide">
+          <div class="review-card">
+            <span class="stars">★★★★★</span>
+            <p>"Professional, reliable and hardworking from start to finish. The quality of their concrete work is excellent, with great attention to detail. Easy to communicate with, turned up when they said they would and made the whole process stress-free. If you're looking for a trustworthy concreting company that takes pride in their work, definitely give them a call."</p>
+            <div class="who"><strong>Lauren Conroy</strong><span>Verified client</span></div>
+          </div>
+        </div>
+        <div class="review-slide">
+          <div class="review-card">
+            <span class="stars">★★★★★</span>
+            <p>"Highly recommend JJ Concrete Creations! The quality of their work is excellent, and they were professional, reliable and easy to deal with from start to finish. The attention to detail was impressive, and they made sure everything was done properly and to a high standard. The team were friendly, hardworking and left everything clean and tidy once the job was finished. You can tell they take pride in their work and genuinely care about making sure the customer is happy."</p>
+            <div class="who"><strong>Alex Coombe</strong><span>Verified client</span></div>
+          </div>
+        </div>
       </div>
-      <div class="review-card">
-        <span class="stars">★★★★★</span>
-        <p>"Good communication from quote to finish, priced fairly, and the driveway edges came up really clean."</p>
-        <div class="who"><strong>Sample client review</strong><span>Add a real quote here once your first jobs are done</span></div>
-      </div>
-      <div class="review-card">
-        <span class="stars">★★★★★</span>
-        <p>"Worked carefully around our pool and existing tiles without a single chip. Would use again."</p>
-        <div class="who"><strong>Sample client review</strong><span>Add a real quote here once your first jobs are done</span></div>
-      </div>
+      <button class="reviews-arrow prev" id="reviewsPrev" aria-label="Previous review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="reviews-arrow next" id="reviewsNext" aria-label="Next review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="reviews-dots" id="reviewsDots">
+      <button class="dot active" data-idx="0" aria-label="Show review 1"></button>
+      <button class="dot" data-idx="1" aria-label="Show review 2"></button>
     </div>
   </div>
 </section>
@@ -1046,6 +1092,60 @@
     if(e.key === 'ArrowLeft') { currentIdx = (currentIdx - 1 + galleryImgs.length) % galleryImgs.length; updateLightbox(); }
     if(e.key === 'ArrowRight') { currentIdx = (currentIdx + 1) % galleryImgs.length; updateLightbox(); }
   });
+
+  // Reviews carousel — auto-rotating
+  (function(){
+    var track = document.getElementById('reviewsTrack');
+    var dots = Array.prototype.slice.call(document.querySelectorAll('#reviewsDots .dot'));
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.review-slide'));
+    var carousel = document.querySelector('.reviews-carousel');
+    if(!track || slides.length === 0) return;
+
+    var idx = 0;
+    var total = slides.length;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var timer = null;
+    var AUTO_MS = 6000;
+
+    function render(){
+      track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+      dots.forEach(function(d, i){ d.classList.toggle('active', i === idx); });
+    }
+    function goTo(i){
+      idx = (i + total) % total;
+      render();
+    }
+    function next(){ goTo(idx + 1); }
+    function prev(){ goTo(idx - 1); }
+
+    function startAuto(){
+      if(reduceMotion || total < 2) return;
+      stopAuto();
+      timer = setInterval(next, AUTO_MS);
+    }
+    function stopAuto(){
+      if(timer){ clearInterval(timer); timer = null; }
+    }
+
+    dots.forEach(function(d){
+      d.addEventListener('click', function(){
+        goTo(parseInt(d.getAttribute('data-idx'), 10));
+        startAuto();
+      });
+    });
+    var prevBtn = document.getElementById('reviewsPrev');
+    var nextBtn = document.getElementById('reviewsNext');
+    if(prevBtn) prevBtn.addEventListener('click', function(){ prev(); startAuto(); });
+    if(nextBtn) nextBtn.addEventListener('click', function(){ next(); startAuto(); });
+
+    carousel.addEventListener('mouseenter', stopAuto);
+    carousel.addEventListener('mouseleave', startAuto);
+    carousel.addEventListener('focusin', stopAuto);
+    carousel.addEventListener('focusout', startAuto);
+
+    render();
+    startAuto();
+  })();
 
   // Quote form -> Web3Forms
   var quoteForm = document.getElementById('quoteForm');
